@@ -57,9 +57,8 @@ protected:
             svf.pushTimestep(i, i);
         }
 
-        //double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
-        //CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
-        CPPUNIT_ASSERT(false);
+        double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
     }
 
     void testExactDouble(void) {
