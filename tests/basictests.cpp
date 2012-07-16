@@ -47,7 +47,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_EQUAL(svfVal, 1.0);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
     }
 
     void testExactIntSampled(void) {
@@ -58,7 +58,7 @@ protected:
         }
 
         //double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
-        //CPPUNIT_ASSERT_EQUAL(svfVal, 1.0);
+        //CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
         CPPUNIT_ASSERT(false);
     }
 
@@ -70,7 +70,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_EQUAL(svfVal, 1.0);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
     }
 };
 
