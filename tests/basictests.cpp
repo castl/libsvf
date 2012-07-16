@@ -4,35 +4,30 @@
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <boost/math/special_functions/fpclassify.hpp>
 #include <iostream>
 #include <cmath>
 
-class ExactMatch : public CPPUNIT_NS::TestCase
+class ScalarTests: public CPPUNIT_NS::TestCase
 {
-    CPPUNIT_TEST_SUITE(ExactMatch);
+    CPPUNIT_TEST_SUITE(ScalarTests);
     CPPUNIT_TEST(testExactInt);
+    CPPUNIT_TEST(testExactIntMixed);
     CPPUNIT_TEST(testExactIntSampled);
     CPPUNIT_TEST(testExactDouble);
+    CPPUNIT_TEST(testZeroCorrel);
+    CPPUNIT_TEST(testRandomCorrel);
+    CPPUNIT_TEST(testRandomCorrelBig);
+    CPPUNIT_TEST(testPartialCorrel);
     CPPUNIT_TEST_SUITE_END();
-
-public:
-    ExactMatch() {
-    }
-
-    ~ExactMatch() {
-    }
-
-    void setUp(void) {
-    }
-
-    void tearDown(void) {
-    }
 
 protected:
 
     struct ScalarDist {
         template <typename T>
         double operator()(T a, T b) {
+            assert(!isnan(a));
+            assert(!isnan(b));
             return sqrt(pow((double)a, 2) + pow((double)b, 2));
         }
     };
@@ -45,7 +40,18 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+    }
+
+    void testExactIntMixed(void) {
+        SVF::SVF<int, ScalarDist, double, ScalarDist> svf;
+
+        for (size_t i=0; i<1000; i++) {
+            svf.pushTimestep(i, ((double)i)/1000);
+        }
+
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
     }
 
     void testExactIntSampled(void) {
@@ -56,7 +62,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
     }
 
     void testExactDouble(void) {
@@ -67,8 +73,63 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(svfVal, 1.0, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+    }
+
+    void testZeroCorrel(void) {
+        SVF::SVF<double, ScalarDist, double, ScalarDist> svf;
+
+        for (size_t i=0; i<1000; i++) {
+            // Sine waves have zero linear correlation
+            svf.pushTimestep(((double)i) / 10, sin((double)i));
+        }
+
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.01);
+    }
+
+    void testRandomCorrel(void) {
+        SVF::SVF<int, ScalarDist, int, ScalarDist> svf;
+
+        srand(100);
+        for (size_t i=0; i<1000; i++) {
+            // Sine waves have zero linear correlation
+            svf.pushTimestep(rand(), rand());
+        }
+
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.05);
+    }
+
+   void testRandomCorrelBig(void) {
+        // A bigger test for random correlation so we can lower the
+        // delta
+ 
+        SVF::SVF<int, ScalarDist, int, ScalarDist> svf;
+
+        srand(100);
+        for (size_t i=0; i<100000; i++) {
+            // Sine waves have zero linear correlation
+            svf.pushTimestep(rand(), rand());
+        }
+
+        double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.002);
+    }
+
+    void testPartialCorrel(void) {
+        SVF::SVF<double, ScalarDist, double, ScalarDist> svf;
+
+        for (size_t i=0; i<1000; i++) {
+            // Sine waves have zero linear correlation, adding 'i'
+            // makes it partially linearly correlated
+            svf.pushTimestep(((double)i) / 10, i + i*sin((double)i));
+        }
+
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT(svfVal > 0.2);
+        CPPUNIT_ASSERT(svfVal < 0.8);
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ExactMatch);
+CPPUNIT_TEST_SUITE_REGISTRATION(ScalarTests);
