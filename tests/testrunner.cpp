@@ -5,6 +5,7 @@
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/BriefTestProgressListener.h>
+#include <cppunit/TextOutputter.h>
 
 int main( int ac, char **av )
 {
@@ -23,6 +24,9 @@ int main( int ac, char **av )
     CPPUNIT_NS::TestRunner runner;
     runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
     runner.run( controller );
+
+    CPPUNIT_NS::TextOutputter textOut(&result, std::cout);
+    textOut.write();
 
     return result.wasSuccessful() ? 0 : 1;
 }

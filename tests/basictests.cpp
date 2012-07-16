@@ -12,6 +12,7 @@ class ExactMatch : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST_SUITE(ExactMatch);
     CPPUNIT_TEST(testExactInt);
     CPPUNIT_TEST(testExactIntSampled);
+    CPPUNIT_TEST(testExactDouble);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -59,6 +60,17 @@ protected:
         //double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
         //CPPUNIT_ASSERT_EQUAL(svfVal, 1.0);
         CPPUNIT_ASSERT(false);
+    }
+
+    void testExactDouble(void) {
+        SVF::SVF<double, ScalarDist, double, ScalarDist> svf;
+
+        for (size_t i=0; i<1000; i++) {
+            svf.pushTimestep(((double)i) / 10, ((double)i)/100);
+        }
+
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT_EQUAL(svfVal, 1.0);
     }
 };
 
