@@ -96,7 +96,7 @@ public:
             secondCounter += 1;
 
             double xd = x[*p] - xbar;
-            double yd = x[*p] - ybar;
+            double yd = y[*p] - ybar;
 
             sum += xd * yd;
             sx += xd * xd;
