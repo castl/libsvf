@@ -33,9 +33,7 @@ protected:
     struct ScalarDist {
         template <typename T>
         double operator()(T a, T b) {
-            double ad = a;
-            double ab = b;
-            return sqrt(pow(ad, 2) + pow(ab, 2));
+            return sqrt(pow((double)a, 2) + pow((double)b, 2));
         }
     };
 

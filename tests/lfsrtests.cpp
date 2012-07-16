@@ -23,7 +23,7 @@ protected:
         unordered_set<uint64_t> returnedNums; 
         SVF::MaximalLFSRMod lfsr(mod);
 
-        size_t iters = 300000;
+        size_t iters = 100000;
         if (iters >= mod)
             iters = (mod -1);
 

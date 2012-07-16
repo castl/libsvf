@@ -2,6 +2,7 @@
 #define __SVF_TRACE_HPP__
 
 #include <vector>
+#include <cassert>
 
 namespace SVF {
 
@@ -21,6 +22,7 @@ public:
     }
 
     Type operator[](size_t i) {
+        assert(i < trace.size());
         return trace[i];
     }
 

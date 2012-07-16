@@ -23,7 +23,7 @@ class FullTriangleSelector : public Selector {
 
 public:
     template<typename OType, typename SCType>
-    void init(Trace<OType>& oTrace, Trace<SCType>& scTrace) {
+    void init(OType& oTrace, SCType& scTrace) {
         traceSize = oTrace.size();
         reset();
 
@@ -33,21 +33,21 @@ public:
 
     virtual void reset() {
         x = 0;
-        y = 0;
+        y = 1;
     }
 
     virtual boost::optional<Pair> next() {
-        Pair ret(x++, y);
-        if (x >= y) {
-            if (y >= traceSize) {
-                // We're at the end
-                return boost::optional<Pair>();
-            }
+        if (y >= traceSize) {
+            // We're at the end
+            return boost::optional<Pair>();
+        }
 
+        Pair ret(y, x++);
+        if (x >= y) {
             // Go to next row
             y += 1;
             x = 0;
-        }
+        } 
         return ret;
     }
 };
