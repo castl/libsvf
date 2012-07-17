@@ -143,7 +143,7 @@ protected:
         SVF::SVF<int, ScalarDist, int, ScalarDist> svf;
 
         srand(100);
-        for (size_t i=0; i<10000; i++) {
+        for (size_t i=0; i<100000; i++) {
             // Sine waves have zero linear correlation
             svf.pushTimestep(rand(), rand());
         }
@@ -156,7 +156,7 @@ protected:
             double svfVal;
             {
                 Timer t(elapsed);
-                svfVal = svf.computeSVF();
+                svfVal = svf.computeSVF(SVF::RandomTraceProportional(300));
             }
             CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.002);
             printf("%lf seconds", elapsed);

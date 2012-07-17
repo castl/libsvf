@@ -5,6 +5,7 @@
 #include <cmath>
 #include <stdint.h>
 #include <boost/optional.hpp>
+#include <omp.h>
 
 #include <cstdio>
 
@@ -14,7 +15,18 @@ class Selector {
 public:
     typedef std::pair<size_t, size_t> Pair;
     virtual boost::optional<Pair> next() = 0;
+    virtual boost::optional<Pair> next(int num) {
+        assert(num > 0);
+        auto r = next();
+        advance(num - 1);
+        return r;
+    }
+    virtual void advance(size_t num) {
+        for (size_t i=0; i<num; i++)
+            next();
+    }
     virtual void reset() = 0;
+    virtual Selector* clone() = 0;
 };
 
 class FullTriangleSelector : public Selector {
@@ -22,6 +34,15 @@ class FullTriangleSelector : public Selector {
     size_t x, y;
 
 public:
+    FullTriangleSelector() {
+    }
+
+    FullTriangleSelector(const FullTriangleSelector& c) {
+        this->traceSize = c.traceSize;
+        this->x = c.x;
+        this->y = c.y;
+    }
+
     template<typename OType, typename SCType>
     void init(OType& oTrace, SCType& scTrace) {
         traceSize = oTrace.size();
@@ -31,12 +52,12 @@ public:
         assert(traceSize > 1 && "Traces must have at least two elements each");
     }
 
-    virtual void reset() {
+    void reset() {
         x = 0;
         y = 1;
     }
 
-    virtual boost::optional<Pair> next() {
+    boost::optional<Pair> next() {
         if (y >= traceSize) {
             // We're at the end
             return boost::optional<Pair>();
@@ -49,6 +70,22 @@ public:
             x = 0;
         } 
         return ret;
+    }
+
+    void advance(size_t num) {
+        for (size_t i=0; i<num; i++)
+            next();
+    }
+
+    boost::optional<Pair> next(int num) {
+        assert(num > 0);
+        auto r = next();
+        advance(num - 1);
+        return r;
+    }
+
+    FullTriangleSelector* clone() {
+        return new FullTriangleSelector(*this);
     }
 };
 
@@ -133,6 +170,12 @@ public:
         mod = 0;
     }
 
+    MaximalLFSRMod(const MaximalLFSRMod& c) {
+        mod = c.mod;
+        lfsr = c.lfsr;
+        taps = c.taps;
+    }
+
     MaximalLFSRMod(uint64_t mod) : mod(mod) {
         lfsr = 0xDEADBEEFDEADBEEF % mod;
         size_t bits = 3;
@@ -166,6 +209,15 @@ public:
     RandomTraceProportional(double perTime) : perTime(perTime) {
     }
 
+    RandomTraceProportional(const RandomTraceProportional& c) {
+        lfsr = c.lfsr;
+        perTime = c.perTime;
+        traceSize = c.traceSize;
+        numSamples = c.numSamples;
+        num = c.num;
+        full = c.full;
+    }
+
     template<typename OType, typename SCType>
     void init(Trace<OType>& oTrace, Trace<SCType>& scTrace) {
         traceSize = oTrace.size();
@@ -184,7 +236,7 @@ public:
         lfsr = MaximalLFSRMod(full);
     }
 
-    virtual boost::optional<Pair> next() {
+    boost::optional<Pair> next() {
         if (num >= numSamples) {
             return boost::optional<Pair>();
         }
@@ -197,6 +249,22 @@ public:
         assert(j < traceSize);
         assert(i < traceSize);
         return Pair(i, j);
+    }
+
+    void advance(size_t num) {
+        for (size_t i=0; i<num; i++)
+            next();
+    }
+
+    boost::optional<Pair> next(int num) {
+        assert(num > 0);
+        auto r = next();
+        advance(num - 1);
+        return r;
+    }
+
+    virtual RandomTraceProportional* clone() {
+        return new RandomTraceProportional(*this);
     }
 };
 
@@ -212,74 +280,59 @@ public:
         sel.reset();
 #pragma omp parallel default(none) shared(x, y, sel) reduction(+:size) reduction(+:xbar) reduction(+:ybar)
         {
-            bool cont = true;
-            boost::optional<Selector::Pair> pArr[TBUFFER];
-            while (cont) {
-#pragma omp critical
-                {
-                    for (size_t i=0; i<TBUFFER; i++) {
-                        pArr[i] = sel.next();
-                        if (!pArr[i])
-                            break;
-                    }
-                }
+            // Get a selector clone, advance by my thread number
+            size_t adv = omp_get_num_threads();
+            size_t thread = omp_get_thread_num();
+            //printf("Thread: %lu, adv:%lu\n", thread, adv);
+            Selector* mySel = sel.clone();
+            mySel->advance(thread);
 
-                for (size_t i=0; i<TBUFFER; i++) {
-                    if (!pArr[i]) {
-                        cont = false;
-                        break;
-                    }
-
-                    size += 1;
-                    auto pl = *pArr[i];
-                    xbar += x[pl];
-                    ybar += y[pl];
-                }
+            boost::optional<Selector::Pair> p;
+            while ( (p = mySel->next(adv)) ) {
+                size += 1;
+                auto pl = *p;
+                xbar += x[pl];
+                ybar += y[pl];
             }
+
+            delete mySel;
         }
 
 
-        boost::optional<Selector::Pair> p;
         // Compute averages
         xbar /= size;
         ybar /= size;
 
-        sel.reset();
         size_t secondCounter = 0;
         double sum = 0.0, sx = 0.0, sy = 0.0;
 
-#pragma omp parallel default(none) shared(x, y, sel, xbar, ybar) reduction(+:secondCounter) \
-        reduction(+:sum) reduction(+:sx) reduction(+:sy)
+#pragma omp parallel default(none) shared(x, y, sel, xbar, ybar) \
+        reduction(+:secondCounter) reduction(+:sum) reduction(+:sx) reduction(+:sy)
         {
-            bool cont = true;
-            boost::optional<Selector::Pair> pArr[TBUFFER];
-            while (cont) {
-#pragma omp critical
-                {
-                    for (size_t i=0; i<TBUFFER; i++) {
-                        pArr[i] = sel.next();
-                        if (!pArr[i])
-                            break;
-                    }
-                }
+            // Get a selector clone, advance by my thread number
+            size_t adv = omp_get_num_threads();
+            size_t thread = omp_get_thread_num();
+            //printf("Thread: %lu, adv:%lu\n", thread, adv);
+            Selector* mySel = sel.clone();
+            mySel->advance(thread);
 
-                for (size_t i=0; i<TBUFFER; i++) {
-                    if (!pArr[i]) {
-                        cont = false;
-                        break;
-                    }
-                    auto pl = *pArr[i];
-                    secondCounter += 1;
+            boost::optional<Selector::Pair> p;
+            while ( (p = mySel->next(adv)) ) {
+                secondCounter += 1;
 
-                    double xd = x[pl] - xbar;
-                    double yd = y[pl] - ybar;
+                double xd = x[*p] - xbar;
+                double yd = y[*p] - ybar;
 
-                    sum += xd * yd;
-                    sx += xd * xd;
-                    sy += yd * yd;
-                }
+                sum += xd * yd;
+                sx += xd * xd;
+                sy += yd * yd;
             }
+
+            delete mySel;
         }
+
+        //printf("SecondCounter: %lu, Size: %lu, xbar: %lf, ybar: %lf\n", 
+        //secondCounter, size, xbar, ybar);
         assert(secondCounter == size);
 
         return sum / (sqrt(sx) * sqrt(sy));
