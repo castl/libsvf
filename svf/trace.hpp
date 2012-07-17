@@ -21,7 +21,7 @@ public:
         trace.push_back(point);
     }
 
-    Type operator[](size_t i) {
+    const Type& operator[](size_t i) {
         assert(i < trace.size());
         return trace[i];
     }
