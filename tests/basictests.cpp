@@ -8,6 +8,10 @@
 #include <iostream>
 #include <cmath>
 
+#include <svf/timer.hpp>
+
+#include <omp.h>
+
 class ScalarTests: public CPPUNIT_NS::TestCase
 {
     CPPUNIT_TEST_SUITE(ScalarTests);
@@ -19,6 +23,7 @@ class ScalarTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(testRandomCorrel);
     CPPUNIT_TEST(testRandomCorrelBig);
     CPPUNIT_TEST(testPartialCorrel);
+    CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -129,6 +134,34 @@ protected:
         double svfVal = svf.computeSVF();
         CPPUNIT_ASSERT(svfVal > 0.2);
         CPPUNIT_ASSERT(svfVal < 0.8);
+    }
+
+    void testRandomCorrelBigParallel(void) {
+        // A bigger test for random correlation so we can lower the
+        // delta
+ 
+        SVF::SVF<int, ScalarDist, int, ScalarDist> svf;
+
+        srand(100);
+        for (size_t i=0; i<10000; i++) {
+            // Sine waves have zero linear correlation
+            svf.pushTimestep(rand(), rand());
+        }
+
+        for (size_t threads = 1; threads<16; threads++) {
+            omp_set_num_threads(threads);
+            printf("\n%lu threads: ", threads);
+            fflush(stdout);
+            double elapsed;
+            double svfVal;
+            {
+                Timer t(elapsed);
+                svfVal = svf.computeSVF();
+            }
+            CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.002);
+            printf("%lf seconds", elapsed);
+        }
+        printf("\n");
     }
 };
 

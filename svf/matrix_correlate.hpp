@@ -200,22 +200,46 @@ public:
     }
 };
 
+#define TBUFFER 500 
 
 class Pearson {
 public:
     double operator()(Matrix& x, Matrix& y, Selector& sel) {
-        boost::optional<Selector::Pair> p;
 
         size_t size = 0;
         double xbar = 0.0, ybar = 0.0;
 
         sel.reset();
-        while ( (p = sel.next()) ) {
-            size += 1;
-            xbar += x[*p];
-            ybar += y[*p];
+#pragma omp parallel default(none) shared(x, y, sel) reduction(+:size) reduction(+:xbar) reduction(+:ybar)
+        {
+            bool cont = true;
+            boost::optional<Selector::Pair> pArr[TBUFFER];
+            while (cont) {
+#pragma omp critical
+                {
+                    for (size_t i=0; i<TBUFFER; i++) {
+                        pArr[i] = sel.next();
+                        if (!pArr[i])
+                            break;
+                    }
+                }
+
+                for (size_t i=0; i<TBUFFER; i++) {
+                    if (!pArr[i]) {
+                        cont = false;
+                        break;
+                    }
+
+                    size += 1;
+                    auto pl = *pArr[i];
+                    xbar += x[pl];
+                    ybar += y[pl];
+                }
+            }
         }
 
+
+        boost::optional<Selector::Pair> p;
         // Compute averages
         xbar /= size;
         ybar /= size;
@@ -223,15 +247,38 @@ public:
         sel.reset();
         size_t secondCounter = 0;
         double sum = 0.0, sx = 0.0, sy = 0.0;
-        while (p = sel.next()) {
-            secondCounter += 1;
 
-            double xd = x[*p] - xbar;
-            double yd = y[*p] - ybar;
+#pragma omp parallel default(none) shared(x, y, sel, xbar, ybar) reduction(+:secondCounter) \
+        reduction(+:sum) reduction(+:sx) reduction(+:sy)
+        {
+            bool cont = true;
+            boost::optional<Selector::Pair> pArr[TBUFFER];
+            while (cont) {
+#pragma omp critical
+                {
+                    for (size_t i=0; i<TBUFFER; i++) {
+                        pArr[i] = sel.next();
+                        if (!pArr[i])
+                            break;
+                    }
+                }
 
-            sum += xd * yd;
-            sx += xd * xd;
-            sy += yd * yd;
+                for (size_t i=0; i<TBUFFER; i++) {
+                    if (!pArr[i]) {
+                        cont = false;
+                        break;
+                    }
+                    auto pl = *pArr[i];
+                    secondCounter += 1;
+
+                    double xd = x[pl] - xbar;
+                    double yd = y[pl] - ybar;
+
+                    sum += xd * yd;
+                    sx += xd * xd;
+                    sy += yd * yd;
+                }
+            }
         }
         assert(secondCounter == size);
 

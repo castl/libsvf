@@ -7,8 +7,12 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/TextOutputter.h>
 
+#include <omp.h>
+
 int main( int ac, char **av )
 {
+    omp_set_num_threads(1);
+
     //--- Create the event manager and test controller
     CPPUNIT_NS::TestResult controller;
 

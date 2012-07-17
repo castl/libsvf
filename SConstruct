@@ -4,7 +4,7 @@ env = Environment(CPPPATH = ['.'],
                               '-fopenmp'],
                   LIBS=[],
                   LIBPATH=[],
-                  LINKFLAGS=[])
+                  LINKFLAGS=['-fopenmp'])
 
 
 testrunner = env.Program('testrunner', Glob('tests/*.cpp'),
