@@ -81,6 +81,13 @@ SVF research is conducted at the Computer Architecture and Security
 Technologies Lab in the Computer Science department at Columbia
 University in the city of New York. The original inventors of SVF
 are John Demme, Robert Martin, Adam Waksman and Simha Sethumadhavan.
+Their work is/was supported by grants FA 99500910389 (AFOSR), FA
+865011C7190 (DARPA), FA 87501020253 (DARPA), CCF/TC 1054844 (NSF)
+and gifts from Microsoft Research, WindRiver Corp, Xilinx and
+Synopsys Inc. Opinions, findings, conclusions and recommendations
+expressed in this material are those of the authors and do not
+necessarily reflect the views of the US Government or commercial
+entities.
 
 LibSVF code written and occasionally maintained by John Demme
 <jdd@cs.columbia.edu>.
