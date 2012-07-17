@@ -7,6 +7,11 @@ Measuring Information Leakage", published in ISCA 2012.
 
 http://www.cs.columbia.edu/~simha/preprint_isca12_svf.pdf
 
+Compilation
+=====
+Compilation is not necessary. LibSVF is nearly all templates, so it
+is contained entirely in header files. You can compile and run the
+unit tests with scons.
 
 Usage
 ======
