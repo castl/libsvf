@@ -27,11 +27,12 @@ struct ScalarDist {
     double operator()(T a, T b) {
         assert(!isnan(a));
         assert(!isnan(b));
-        return sqrt(pow((double)a, 2) + pow((double)b, 2));
+        return fabs(a - b);
     }
 };
 
-// ...
+// The first two specify the oracle data type and distance function.
+// The last two are the same but for the side-channel trace.
 SVF::SVF<int, ScalarDist, int, ScalarDist> svf;
 
 for (size_t i=0; i<1000; i++) {
@@ -55,7 +56,7 @@ struct ScalarDist {
     double operator()(T a, T b) {
         assert(!isnan(a));
         assert(!isnan(b));
-        return sqrt(pow((double)a, 2) + pow((double)b, 2));
+        return fbs(a - b);
     }
 };
 
