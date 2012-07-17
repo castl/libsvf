@@ -33,7 +33,7 @@ protected:
         double operator()(T a, T b) {
             assert(!isnan(a));
             assert(!isnan(b));
-            return sqrt(pow((double)a, 2) + pow((double)b, 2));
+            return fabs(a - b);
         }
     };
 
@@ -45,7 +45,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.0001);
     }
 
     void testExactIntMixed(void) {
@@ -56,7 +56,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.0001);
     }
 
     void testExactIntSampled(void) {
@@ -67,7 +67,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.0001);
     }
 
     void testExactDouble(void) {
@@ -78,7 +78,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.001);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(1.0, svfVal, 0.0001);
     }
 
     void testZeroCorrel(void) {
@@ -90,7 +90,7 @@ protected:
         }
 
         double svfVal = svf.computeSVF();
-        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.01);
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.005);
     }
 
     void testRandomCorrel(void) {
