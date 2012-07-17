@@ -5,6 +5,8 @@
 #include <cppunit/TestResultCollector.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <svf/timer.hpp>
+
 #include <iostream>
 #include <cmath>
 
@@ -96,6 +98,7 @@ class SparseVectorSVFTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(EqualityTestDiffDims);
     CPPUNIT_TEST(EqualityTestDimReduction);
     CPPUNIT_TEST(EqualityTestMixedTrunc);
+    CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 
@@ -204,6 +207,35 @@ protected:
         
         double svfVal = svf.computeSVF();
         CPPUNIT_ASSERT_DOUBLES_EQUAL(0.95, svfVal, 0.05);
+    }
+
+    void testRandomCorrelBigParallel(void) {
+        // A bigger test for random correlation so we can lower the
+        // delta
+        SVF::SVF<SVF::SparseVector<double>, SVF::SparseVector<double>::EuclideanDistance<>,
+                 SVF::SparseVector<double>, SVF::SparseVector<double>::EuclideanDistance<> > svf;
+
+        for (size_t i=0; i<5000; i++) {
+            SVF::SparseVector<double> a = randVec(1000);
+            SVF::SparseVector<double> b = randVec(1000);
+
+            svf.pushTimestep(a, b);
+        }
+
+        for (size_t threads = 1; threads<16; threads++) {
+            omp_set_num_threads(threads);
+            printf("\n%lu threads: ", threads);
+            fflush(stdout);
+            double elapsed;
+            double svfVal;
+            {
+                Timer t(elapsed);
+                svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
+            }
+            CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.01);
+            printf("%lf seconds", elapsed);
+        }
+        printf("\n");
     }
 };
 
