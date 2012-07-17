@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+# This file script was used to create the array of "magic"
+# maximal taps for the LFSR in matrix_correlate.hpp. It is
+# not used during compilation or runtime, only kept for 
+# future development purposes, if necessary
+
 import sys
 
 tf = file("taps.txt", "r")
