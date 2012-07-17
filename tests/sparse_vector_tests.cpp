@@ -97,12 +97,21 @@ class SparseVectorSVFTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(EqualityTestMixed);
     CPPUNIT_TEST(EqualityTestDiffDims);
     CPPUNIT_TEST(EqualityTestDimReduction);
+    CPPUNIT_TEST(EqualityTestScalarReduction);
     CPPUNIT_TEST(EqualityTestMixedTrunc);
     //CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 
 protected:
+    struct ScalarDist {
+        template <typename T>
+        double operator()(T a, T b) {
+            assert(!isnan(a));
+            assert(!isnan(b));
+            return fabs(a - b);
+        }
+    };
 
     SVF::SparseVector<double> randVec(size_t dims = 10) {
         SVF::SparseVector<double> a;
@@ -182,6 +191,21 @@ protected:
             }
 
             svf.pushTimestep(a, b);
+        }
+        
+        double svfVal = svf.computeSVF();
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(0.5, svfVal, 0.3); // This delta is approx.
+    }
+
+    void EqualityTestScalarReduction(void) {
+        SVF::SVF<SVF::SparseVector<double>, SVF::SparseVector<double>::EuclideanDistance<>,
+                 double, ScalarDist> svf; 
+
+        for (size_t i=0; i<100; i++) {
+            // Just the length seems a decent approximation for 6
+            // dimensions
+            SVF::SparseVector<double> a = randVec(6);
+            svf.pushTimestep(a, a.length());
         }
         
         double svfVal = svf.computeSVF();

@@ -67,6 +67,14 @@ namespace SVF {
             vector.clear();
         }
 
+        double length() {
+            double sum = 0.0;
+            BOOST_FOREACH(auto p, vector) {
+                sum += pow((double)p.second, 2);
+            }
+            return sqrt(sum);
+        }
+
         bool operator==(SparseVector& b) {
             if (vector.size() != b.vector.size())
                 return false;
