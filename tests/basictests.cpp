@@ -23,7 +23,7 @@ class ScalarTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(testRandomCorrel);
     CPPUNIT_TEST(testRandomCorrelBig);
     CPPUNIT_TEST(testPartialCorrel);
-    CPPUNIT_TEST(testRandomCorrelBigParallel);
+    //CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 protected:

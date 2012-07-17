@@ -98,7 +98,7 @@ class SparseVectorSVFTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(EqualityTestDiffDims);
     CPPUNIT_TEST(EqualityTestDimReduction);
     CPPUNIT_TEST(EqualityTestMixedTrunc);
-    CPPUNIT_TEST(testRandomCorrelBigParallel);
+    //CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 
