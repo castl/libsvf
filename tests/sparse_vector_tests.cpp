@@ -222,6 +222,7 @@ protected:
             svf.pushTimestep(a, b);
         }
 
+        double lastSVF;
         for (size_t threads = 1; threads<16; threads++) {
             omp_set_num_threads(threads);
             printf("\n%lu threads: ", threads);
@@ -233,6 +234,11 @@ protected:
                 svfVal = svf.computeSVF(SVF::RandomTraceProportional(25));
             }
             CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.01);
+            if (threads > 1) {
+                CPPUNIT_ASSERT_DOUBLES_EQUAL(lastSVF, svfVal, 0.000001);
+            }
+            lastSVF = svfVal;
+
             printf("%lf seconds", elapsed);
         }
         printf("\n");

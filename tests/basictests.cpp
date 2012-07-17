@@ -23,7 +23,7 @@ class ScalarTests: public CPPUNIT_NS::TestCase
     CPPUNIT_TEST(testRandomCorrel);
     CPPUNIT_TEST(testRandomCorrelBig);
     CPPUNIT_TEST(testPartialCorrel);
-    //CPPUNIT_TEST(testRandomCorrelBigParallel);
+    CPPUNIT_TEST(testRandomCorrelBigParallel);
     CPPUNIT_TEST_SUITE_END();
 
 protected:
@@ -148,6 +148,7 @@ protected:
             svf.pushTimestep(rand(), rand());
         }
 
+        double lastSVF;
         for (size_t threads = 1; threads<16; threads++) {
             omp_set_num_threads(threads);
             printf("\n%lu threads: ", threads);
@@ -159,6 +160,11 @@ protected:
                 svfVal = svf.computeSVF(SVF::RandomTraceProportional(300));
             }
             CPPUNIT_ASSERT_DOUBLES_EQUAL(0.0, svfVal, 0.002);
+            if (threads > 1) {
+                CPPUNIT_ASSERT_DOUBLES_EQUAL(lastSVF, svfVal, 0.000001);
+            }
+            lastSVF = svfVal;
+
             printf("%lf seconds", elapsed);
         }
         printf("\n");

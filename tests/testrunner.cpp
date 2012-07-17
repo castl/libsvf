@@ -9,9 +9,10 @@
 
 #include <omp.h>
 
-int main( int ac, char **av )
-{
-    omp_set_num_threads(1);
+int runTests(size_t threads) {
+    omp_set_num_threads(threads);
+
+    printf("\n == Running all tests for %lu threads == \n\n", threads);
 
     //--- Create the event manager and test controller
     CPPUNIT_NS::TestResult controller;
@@ -34,3 +35,14 @@ int main( int ac, char **av )
 
     return result.wasSuccessful() ? 0 : 1;
 }
+
+int main( int ac, char **av )
+{
+    int rc = runTests(1);
+    runTests(2);
+    runTests(4);
+    runTests(16);
+    runTests(64);
+    return rc;
+}
+
