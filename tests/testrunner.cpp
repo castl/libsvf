@@ -38,11 +38,14 @@ int runTests(size_t threads) {
 
 int main( int ac, char **av )
 {
-    int rc = runTests(1);
-    runTests(2);
-    runTests(4);
-    runTests(16);
-    runTests(64);
-    return rc;
+    if (ac == 1) {
+        return runTests(1);
+    } else {
+        int rc = 1;
+        for (int i = 1; i < ac; i++) {
+            rc &= runTests(strtol(av[i], NULL, 0));
+        }
+        return rc;
+    }
 }
 
