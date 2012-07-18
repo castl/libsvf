@@ -80,6 +80,9 @@ Documentation
 =====
 Yeah, right! Read the code and the unit tests.
 
+License
+=====
+LibSVF is licensed under a BSD-3 license.
 
 Credits
 =====

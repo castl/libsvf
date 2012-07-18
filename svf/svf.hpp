@@ -1,3 +1,13 @@
+/*
+ * LibSVF -- a library for computing Side-channel Vulnerability
+ * Factor.
+ *
+ * Copyright (c) 2012, John Demme, Columbia University
+ *                     jdd@cs.columbia.edu
+ *                     
+ *  Licensed under a BSD-3 license. See LICENSE for details
+ */
+
 #ifndef __SVF_SVF_HPP__
 #define __SVF_SVF_HPP__
 
