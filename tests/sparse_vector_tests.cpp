@@ -107,8 +107,8 @@ protected:
     struct ScalarDist {
         template <typename T>
         double operator()(T a, T b) {
-            assert(!isnan(a));
-            assert(!isnan(b));
+            assert(!std::isnan((T)a));
+            assert(!std::isnan((T)b));
             return fabs(a - b);
         }
     };

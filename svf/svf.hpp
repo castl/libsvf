@@ -16,6 +16,7 @@
 #include <svf/matrix_correlate.hpp>
 
 #include <stdint.h>
+#include <cstdlib>
 #include <cassert>
 
 namespace SVF {

@@ -11,6 +11,8 @@
 #ifndef __SVF_TRACE_HPP__
 #define __SVF_TRACE_HPP__
 
+#include <stdint.h>
+#include <cstdlib>
 #include <vector>
 #include <cassert>
 
