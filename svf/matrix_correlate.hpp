@@ -23,6 +23,8 @@ namespace SVF {
 
 class Selector {
 public:
+    virtual ~Selector() {}
+
     typedef std::pair<size_t, size_t> Pair;
     virtual boost::optional<Pair> next() = 0;
     virtual boost::optional<Pair> next(int num) {
